@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Órbita — Sites &amp; automação para negócios locais</title>
+<meta name="description" content="Estúdio que coloca seu negócio no automático: sites, IA no WhatsApp, agendamento, CRM e automações sob medida." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===================================================================
+   PILOTO — linguagem editorial (inspirada no template Exo Ape)
+   Monocromático zinc + seção clara + rodapé areia. Tipografia
+   gigante e LEVE (peso 300), tracking apertado. Acento: verde
+   WhatsApp só nas chamadas de conversão.
+=================================================================== */
+:root{
+  --bg:#0a0a0a; --bg2:#101012;
+  --fg:#fafafa; --muted:#a1a1aa; --muted2:#71717a;
+  --light:#f6f5f3; --ink:#0a0a0a;
+  --foot:#070707; --sand:#e0ccbb;
+  --wa:#25d366; --wa-ink:#06281f;
+  --line:rgba(255,255,255,.16); --line-d:rgba(10,10,10,.16);
+  --ease:cubic-bezier(0.23,1,0.32,1);
+  --ease2:cubic-bezier(0.77,0,0.175,1);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body{
+  font-family:"Inter",system-ui,sans-serif; font-weight:300;
+  background:var(--bg); color:var(--fg);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  font-size:17px; line-height:1.55; letter-spacing:-0.01em;
+}
+img,svg,video{ display:block; max-width:100%; }
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; cursor:pointer; background:none; border:none; color:inherit; }
+::selection{ background:#27272a; color:#fff; }
+:focus-visible{ outline:2px solid var(--wa); outline-offset:4px; }
+
+/* display type */
+.display{ font-weight:300; letter-spacing:-0.045em; line-height:0.85; }
+.eyebrow{ display:inline-flex; align-items:center; gap:.6rem; font-size:.72rem; text-transform:uppercase; letter-spacing:.22em; color:var(--muted2); font-weight:400; }
+.eyebrow svg{ width:18px; height:18px; }
+
+/* underline-on-hover link */
+.ul{ position:relative; display:inline-block; }
+.ul::after{ content:""; position:absolute; left:0; bottom:-2px; width:100%; height:1px; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform .5s var(--ease); }
+@media(hover:hover){ .ul:hover::after{ transform:scaleX(1); } }
+
+/* circle-arrow CTA */
+.cta{ display:inline-flex; align-items:center; gap:1rem; font-size:.74rem; text-transform:uppercase; letter-spacing:.2em; font-weight:400; }
+.cta .circ{ width:2.6rem; height:2.6rem; border-radius:999px; border:1px solid currentColor; display:grid; place-items:center; flex:none; transition:background-color .5s var(--ease), color .5s var(--ease); }
+.cta .circ svg{ width:16px; height:16px; }
+.cta .lbl{ position:relative; }
+.cta .lbl::after{ content:""; position:absolute; left:0; bottom:-2px; width:100%; height:1px; background:currentColor; transform:scaleX(0); transform-origin:left; transition:transform .5s var(--ease); }
+@media(hover:hover){ .cta:hover .lbl::after{ transform:scaleX(1); } }
+.cta.on-dark:hover .circ{ background:var(--fg); color:var(--bg); }
+.cta.on-light:hover .circ{ background:var(--ink); color:var(--light); }
+
+/* whatsapp pill */
+.wa-btn{ display:inline-flex; align-items:center; gap:.7rem; background:var(--wa); color:var(--wa-ink); font-weight:500; font-size:.95rem; padding:.85rem 1.5rem; border-radius:999px; transition:transform .14s var(--ease), filter .2s ease; }
+.wa-btn svg{ width:18px; height:18px; }
+.wa-btn:hover{ filter:brightness(1.06); }
+.wa-btn:active{ transform:scale(.97); }
+
+/* ===================== NAV ===================== */
+.nav{ position:fixed; top:0; left:0; width:100%; z-index:50; display:flex; justify-content:space-between; align-items:center; padding:clamp(20px,3vw,40px) clamp(22px,6vw,64px); mix-blend-mode:difference; color:#fff; pointer-events:none; }
+.nav a, .nav button{ pointer-events:auto; }
+.nav .brand{ font-size:1.05rem; font-weight:500; letter-spacing:-0.04em; text-transform:uppercase; transition:opacity .3s; }
+.nav .brand:hover{ opacity:.7; }
+.nav .links{ display:flex; gap:2.4vw; font-size:.9rem; }
+.nav .menu-btn{ display:none; align-items:center; gap:.6rem; font-size:.9rem; }
+.nav .menu-btn svg{ width:22px; height:22px; }
+@media(max-width:900px){
+  .nav .links{ display:none; }
+  .nav .menu-btn{ display:inline-flex; }
+}
+/* mobile overlay */
+.m-menu{ position:fixed; inset:0; z-index:49; background:var(--bg); display:flex; flex-direction:column; justify-content:center; gap:1.2rem; padding:8vw; transform:translateY(-100%); visibility:hidden; pointer-events:none; transition:transform .6s var(--ease2), visibility .6s; }
+.m-menu.open{ transform:translateY(0); visibility:visible; pointer-events:auto; }
+.m-menu>a{ font-size:13vw; font-weight:300; letter-spacing:-0.04em; line-height:1; }
+.m-menu .contact{ margin-top:3rem; color:var(--muted); font-size:1rem; display:flex; flex-direction:column; gap:.4rem; }
+
+/* ===================== HERO ===================== */
+.hero{ position:relative; min-height:100svh; display:flex; flex-direction:column; justify-content:flex-end; padding:clamp(120px,18vh,200px) clamp(22px,6vw,8vw) clamp(50px,9vh,110px); z-index:10; overflow:hidden; }
+.hero .bg{ position:absolute; inset:0; z-index:-1;
+  background:
+    radial-gradient(70% 55% at 80% 12%, rgba(224,204,187,.10), transparent 60%),
+    radial-gradient(60% 50% at 12% 100%, rgba(37,211,102,.10), transparent 60%),
+    linear-gradient(180deg, #0d0d0f, #0a0a0a 70%);
+}
+.hero .bg::after{ /* subtle grid */
+  content:""; position:absolute; inset:0; opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size:64px 64px; mask-image:radial-gradient(80% 80% at 50% 40%, #000, transparent);
+}
+.hero-grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:clamp(28px,2vw,40px) 2vw; align-items:end; }
+.hero .intro{ grid-column:1 / -1; max-width:34rem; color:#d4d4d8; font-size:clamp(1rem,1.3vw,1.15rem); margin-bottom:2.5vw; }
+.hero h1{ grid-column:1 / -1; font-size:clamp(2.7rem,9vw,7.5rem); margin:1.5vw 0; }
+.hero h1 span{ display:block; }
+.hero h1 .o2{ margin-left:8vw; }
+.hero .pitch{ grid-column:1 / span 6; color:#c4c4cc; max-width:30rem; font-size:clamp(1rem,1.2vw,1.1rem); }
+.hero .pitch .cta{ margin-top:2.4rem; color:#d4d4d8; }
+.hero .side{ grid-column:9 / span 4; display:flex; flex-direction:column; gap:1.6rem; font-size:.95rem; }
+.hero .side .grp{ display:flex; flex-direction:column; gap:.5rem; }
+.hero .side .grp.dim a{ color:var(--muted); }
+.hero .side .grp.dim a:hover{ color:#fff; }
+@media(max-width:900px){
+  .hero{ justify-content:flex-end; padding-bottom:14vh; }
+  .hero .pitch{ grid-column:1 / -1; margin-top:6vw; }
+  .hero .side{ display:none; }
+  .hero h1 .o2{ margin-left:8vw; }
+}
+
+/* ===================== LIGHT: O QUE EU MONTO ===================== */
+.work{ position:relative; z-index:20; background:var(--light); color:var(--ink); margin-top:-2rem; border-top-left-radius:2.5rem; border-top-right-radius:2.5rem; padding:15vh clamp(22px,6vw,8vw) 18vh; }
+.work .head{ display:flex; flex-direction:column; gap:6vw; margin-bottom:16vh; }
+.work .head .l{ flex:1; }
+.work .head h2{ font-size:clamp(3.4rem,12vw,11rem); color:var(--ink); margin-top:3vw; }
+.work .head .r{ color:#52525b; max-width:22rem; font-size:1.05rem; }
+.work .eyebrow{ color:#9ca3af; }
+@media(min-width:900px){
+  .work .head{ flex-direction:row; align-items:flex-end; gap:2vw; }
+}
+
+.grid-work{ display:grid; grid-template-columns:repeat(12,1fr); gap:6vw 2.5vw; }
+.wcard{ display:block; grid-column:1 / -1; }
+.wcard .frame{ position:relative; overflow:hidden; border-radius:14px; background:#e9e7e3; box-shadow:0 30px 60px -30px rgba(0,0,0,.25); }
+.wcard .frame .inner{ transition:transform 1.4s var(--ease); }
+@media(hover:hover){ .wcard:hover .frame .inner{ transform:scale(1.04); } }
+.wcard .cap{ margin-top:1.4rem; display:flex; flex-wrap:wrap; gap:.2rem 1rem; align-items:baseline; font-size:1rem; color:#71717a; }
+.wcard .cap .nm{ color:var(--ink); font-weight:400; }
+.wcard .cap .dash{ color:#a8a29e; }
+@media(min-width:900px){
+  .wcard.c1{ grid-column:2 / span 6; }
+  .wcard.c2{ grid-column:9 / span 4; margin-top:32vh; }
+  .wcard.c3{ grid-column:4 / span 5; margin-top:14vh; }
+}
+.work .foot-link{ margin-top:18vh; display:flex; justify-content:center; }
+@media(min-width:900px){ .work .foot-link{ justify-content:flex-end; padding-right:8vw; } }
+
+/* --- device mockups (inside .inner) --- */
+/* browser — escritório de advocacia */
+.mck-browser{ aspect-ratio:4/5; background:#0b1320; display:flex; flex-direction:column; }
+.mck-browser .bar{ height:34px; display:flex; align-items:center; gap:7px; padding:0 14px; background:#0a1019; }
+.mck-browser .bar i{ width:9px; height:9px; border-radius:50%; background:#26324a; display:block; }
+.mck-browser .bar .url{ margin-left:10px; font-size:9px; color:#6b7a99; background:#060a12; padding:3px 10px; border-radius:6px; }
+.mck-browser .screen{ flex:1; position:relative; color:#f3ead9;
+  background:radial-gradient(120% 90% at 80% -10%, #1a2942, #0b1320 60%); padding:0; display:flex; flex-direction:column; }
+.mck-browser .topnav{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid rgba(194,163,107,.18); }
+.mck-browser .topnav .logo{ font-family:"Playfair Display",serif; font-size:13px; letter-spacing:.02em; color:#f3ead9; }
+.mck-browser .topnav .logo b{ color:#c2a36b; font-weight:600; }
+.mck-browser .topnav .lks{ display:flex; gap:11px; font-size:8px; letter-spacing:.06em; text-transform:uppercase; color:#9fb0cc; }
+.mck-browser .hero{ flex:1; padding:22px 18px; display:flex; flex-direction:column; justify-content:center; }
+.mck-browser .hero .eb{ font-size:8px; letter-spacing:.22em; text-transform:uppercase; color:#c2a36b; margin-bottom:9px; }
+.mck-browser .hero h4{ font-family:"Playfair Display",serif; font-weight:500; line-height:1.04; letter-spacing:-0.01em; font-size:clamp(1.3rem,3.4vw,2.05rem); margin:0 0 10px; color:#f6efe2; }
+.mck-browser .hero p{ font-size:10px; color:#aebbd1; max-width:30ch; line-height:1.5; }
+.mck-browser .hero .b{ margin-top:14px; align-self:flex-start; background:#c2a36b; color:#1a1206; font-size:9.5px; font-weight:600; padding:8px 15px; border-radius:3px; letter-spacing:.02em; }
+.mck-browser .areas{ display:flex; gap:0; border-top:1px solid rgba(194,163,107,.18); }
+.mck-browser .areas span{ flex:1; text-align:center; font-size:7.5px; letter-spacing:.08em; text-transform:uppercase; color:#9fb0cc; padding:10px 4px; border-right:1px solid rgba(194,163,107,.12); }
+.mck-browser .areas span:last-child{ border-right:none; }
+
+/* phone */
+.mck-phone{ aspect-ratio:3/4; background:#0c0d10; display:grid; place-items:center; padding:22px; }
+.mck-phone .device{ width:min(82%,260px); aspect-ratio:9/18.5; background:#000; border-radius:30px; padding:9px; box-shadow:0 0 0 2px #26272b, 0 20px 40px -20px #000; }
+.mck-phone .scr{ width:100%; height:100%; border-radius:23px; overflow:hidden; background:#0b141a; display:flex; flex-direction:column; }
+.mck-phone .wahead{ background:#075e54; padding:12px 12px 10px; display:flex; align-items:center; gap:8px; }
+.mck-phone .wahead .av{ width:26px; height:26px; border-radius:50%; background:#128c7e; display:grid; place-items:center; font-size:10px; color:#cffaeb; }
+.mck-phone .wahead .nm{ font-size:11px; color:#fff; font-weight:400; line-height:1.1; }
+.mck-phone .wahead .on{ font-size:8px; color:#a7f3d0; }
+.mck-phone .body{ flex:1; padding:12px 10px; display:flex; flex-direction:column; gap:7px; background:#0b141a; }
+.mck-phone .bub{ max-width:80%; font-size:10px; line-height:1.35; padding:7px 9px; border-radius:9px; }
+.mck-phone .bub.them{ align-self:flex-start; background:#202c33; color:#e9edef; }
+.mck-phone .bub.me{ align-self:flex-end; background:#005c4b; color:#e9edef; }
+
+/* dashboard */
+.mck-dash{ aspect-ratio:4/5; background:#0e0f12; padding:20px; display:flex; flex-direction:column; gap:12px; }
+.mck-dash .dh{ display:flex; justify-content:space-between; align-items:center; }
+.mck-dash .dh .t{ font-size:12px; color:#fafafa; font-weight:400; }
+.mck-dash .dh .pill{ font-size:8px; letter-spacing:.15em; text-transform:uppercase; color:var(--wa); border:1px solid rgba(37,211,102,.4); border-radius:999px; padding:3px 8px; }
+.mck-dash .tiles{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; }
+.mck-dash .tile{ background:#17181c; border-radius:9px; padding:10px 9px; }
+.mck-dash .tile .v{ font-size:16px; color:#fff; letter-spacing:-0.03em; }
+.mck-dash .tile .l{ font-size:7.5px; color:#71717a; margin-top:3px; }
+.mck-dash .chart{ flex:1; display:flex; align-items:flex-end; gap:6px; padding-top:6px; }
+.mck-dash .chart .col{ flex:1; background:linear-gradient(180deg,#25d366,#0f5132); border-radius:4px 4px 0 0; opacity:.85; }
+
+/* ===================== PORTFÓLIO: galeria ===================== */
+.gallery{ display:grid; grid-template-columns:1fr; gap:7vw 3vw; }
+@media(min-width:760px){
+  .gallery{ grid-template-columns:1fr 1fr; gap:6vw 3vw; align-items:start; }
+  .gallery>.wcard{ grid-column:auto; }
+  .gallery>.wcard:nth-child(even){ margin-top:9vh; }
+}
+
+/* --- landing page paramétrica --- */
+.lp{ aspect-ratio:4/5; display:flex; flex-direction:column; background:#0a0a0a; font-family:"Inter",sans-serif; }
+.lp .bar{ height:32px; display:flex; align-items:center; gap:7px; padding:0 14px; background:var(--lp-bar,#15161a); }
+.lp .bar i{ width:9px; height:9px; border-radius:50%; background:var(--lp-dot,#3a3a40); display:block; }
+.lp .bar .u{ margin-left:10px; font-size:9px; color:var(--lp-url,#888); background:var(--lp-urlbg,#000); padding:3px 10px; border-radius:6px; }
+.lp .scr{ flex:1; display:flex; flex-direction:column; background:var(--lp-bg); color:var(--lp-text); }
+.lp .nav{ display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--lp-line); }
+.lp .nav .b{ font-family:var(--lp-display,"Inter",sans-serif); font-size:13px; color:var(--lp-text); font-weight:var(--lp-bw,600); letter-spacing:var(--lp-ls,0); text-transform:var(--lp-tt,none); }
+.lp .nav .b em{ color:var(--lp-accent); font-style:normal; }
+.lp .nav .l{ font-size:8px; letter-spacing:.08em; text-transform:uppercase; color:var(--lp-muted); }
+.lp .hero{ flex:1; display:flex; flex-direction:column; justify-content:center; padding:24px 18px; background:var(--lp-hero,transparent); }
+.lp .hero .eb{ font-size:8px; letter-spacing:.22em; text-transform:uppercase; color:var(--lp-accent); margin-bottom:9px; }
+.lp .hero h4{ font-family:var(--lp-display,"Inter",sans-serif); font-weight:var(--lp-hw,600); line-height:1.05; letter-spacing:var(--lp-hls,-0.01em); text-transform:var(--lp-htt,none); font-size:clamp(1.3rem,3.3vw,2rem); margin:0 0 10px; color:var(--lp-text); }
+.lp .hero p{ font-size:10px; color:var(--lp-muted); max-width:30ch; line-height:1.5; }
+.lp .hero .cta{ display:inline-flex; margin-top:14px; align-self:flex-start; background:var(--lp-accent); color:var(--lp-accent-ink,#fff); font-size:9.5px; font-weight:600; padding:8px 15px; border-radius:var(--lp-radius,999px); letter-spacing:.02em; text-transform:var(--lp-btt,none); }
+.lp .strip{ display:flex; border-top:1px solid var(--lp-line); }
+.lp .strip span{ flex:1; text-align:center; font-size:7.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--lp-muted); padding:10px 4px; border-right:1px solid var(--lp-line); }
+.lp .strip span:last-child{ border-right:none; }
+
+/* restaurante — quente, serifado */
+.lp--rest{ --lp-bar:#241712; --lp-dot:#4a3326; --lp-url:#b89a82; --lp-urlbg:#160d09;
+  --lp-bg:radial-gradient(120% 90% at 75% -10%,#3a241a,#1c110b 65%); --lp-text:#f4e7d6; --lp-muted:#c9ab93;
+  --lp-accent:#d98a4f; --lp-accent-ink:#1c0f06; --lp-line:rgba(217,138,79,.2);
+  --lp-display:"Playfair Display",serif; --lp-hw:500; --lp-radius:4px; }
+/* barbearia — preto, âmbar, bold maiúsculo */
+.lp--barber{ --lp-bar:#101012; --lp-dot:#2a2a2e; --lp-url:#9a9aa2; --lp-urlbg:#000;
+  --lp-bg:linear-gradient(180deg,#161618,#0a0a0b); --lp-text:#f4f4f5; --lp-muted:#a1a1aa;
+  --lp-accent:#e3b341; --lp-accent-ink:#1a1405; --lp-line:rgba(227,179,65,.18);
+  --lp-bw:700; --lp-ls:.06em; --lp-tt:uppercase; --lp-hw:700; --lp-hls:-0.02em; --lp-htt:uppercase; --lp-radius:2px; --lp-btt:uppercase; }
+/* clínica odontológica — claro, limpo, confiável */
+.lp--dental{ --lp-bar:#e7edf1; --lp-dot:#c2ccd4; --lp-url:#7a8794; --lp-urlbg:#fff;
+  --lp-bg:linear-gradient(180deg,#ffffff,#eef4f7); --lp-text:#143642; --lp-muted:#5b7785;
+  --lp-accent:#16a3a3; --lp-accent-ink:#fff; --lp-line:rgba(20,54,66,.1); --lp-hw:600; --lp-radius:999px; }
+/* studio fitness — escuro, lima, energético */
+.lp--fit{ --lp-bar:#0d0f0c; --lp-dot:#2a2f26; --lp-url:#9aa896; --lp-urlbg:#000;
+  --lp-bg:radial-gradient(120% 90% at 20% -10%,#1e2a16,#0b0e09 65%); --lp-text:#f2f6ec; --lp-muted:#a7b89c;
+  --lp-accent:#b6f23b; --lp-accent-ink:#101406; --lp-line:rgba(182,242,59,.18);
+  --lp-bw:700; --lp-ls:-0.01em; --lp-hw:700; --lp-hls:-0.03em; --lp-htt:uppercase; --lp-radius:4px; --lp-btt:uppercase; }
+
+/* --- card de IA animada (WhatsApp) --- */
+.iacard{ aspect-ratio:4/5; background:#0b141a; display:flex; flex-direction:column; overflow:hidden; }
+.iacard .ihead{ background:#075e54; padding:12px 14px; display:flex; align-items:center; gap:9px; }
+.iacard .ihead .av{ width:30px; height:30px; border-radius:50%; background:#128c7e; display:grid; place-items:center; font-size:11px; color:#cffaeb; font-weight:500; }
+.iacard .ihead .nm{ font-size:12px; color:#fff; font-weight:400; line-height:1.15; }
+.iacard .ihead .on{ font-size:8.5px; color:#a7f3d0; display:flex; align-items:center; gap:4px; }
+.iacard .ihead .on::before{ content:""; width:5px; height:5px; border-radius:50%; background:#a7f3d0; }
+.iacard .chat{ flex:1; background:linear-gradient(180deg,#0b141a,#0a1116); border-radius:0; padding:14px; min-height:0; display:flex; flex-direction:column; gap:8px; overflow:hidden; }
+.iacard .confirm{ margin-top:8px; }
+
+/* ===================== SERVIÇOS — o que fazemos ===================== */
+.svc{ background:var(--bg); padding:16vh clamp(22px,6vw,8vw); }
+.svc .head{ margin-bottom:9vh; max-width:46rem; }
+.svc h2{ font-size:clamp(3rem,11vw,9rem); margin-top:3vw; }
+.svc .head p{ color:var(--muted); margin-top:1.6rem; font-size:1.08rem; }
+.svc .list{ border-top:1px solid var(--line); }
+.svc .row{ display:grid; grid-template-columns:auto 1fr; gap:.4rem 5vw; padding:4vh 0 4vh clamp(0px,1vw,12px); border-bottom:1px solid var(--line); transition:padding-left .4s var(--ease); }
+.svc .row .n{ font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.8rem; color:var(--sand); letter-spacing:.05em; padding-top:.5rem; }
+.svc .row .c h3{ font-size:clamp(1.5rem,3.4vw,2.2rem); font-weight:300; letter-spacing:-0.03em; }
+.svc .row .c p{ color:var(--muted); margin-top:.7rem; max-width:46ch; font-size:1.02rem; }
+@media(hover:hover){ .svc .row:hover{ padding-left:clamp(8px,2vw,28px); } }
+@media(min-width:760px){
+  .svc .row{ grid-template-columns:80px 1.1fr 1.4fr; align-items:start; gap:5vw; }
+  .svc .row .c h3{ margin:0; }
+  .svc .row .c.desc{ padding-top:.4rem; }
+}
+
+/* ===================== EXEMPLOS INTERATIVOS ===================== */
+.examples{ display:grid; grid-template-columns:1fr; gap:9vh 3vw; }
+@media(min-width:900px){ .examples{ grid-template-columns:1fr 1fr; gap:4vw; align-items:start; } }
+.demo{ display:flex; flex-direction:column; }
+.demo .hint{ margin-top:1.4rem; display:flex; flex-wrap:wrap; gap:.3rem 1rem; align-items:baseline; font-size:1rem; color:#71717a; }
+.demo .hint .nm{ color:var(--ink); font-weight:400; }
+.demo .hint .dash{ color:#a8a29e; }
+.demo .hint .tip{ font-family:"JetBrains Mono",monospace; font-size:.72rem; letter-spacing:.04em; color:#16a3a3; }
+
+.site{ border-radius:16px; overflow:hidden; box-shadow:0 30px 70px -34px rgba(0,0,0,.45); background:#000; transition:transform .5s var(--ease), box-shadow .5s var(--ease); }
+@media(hover:hover){ .demo:hover .site{ transform:translateY(-6px); box-shadow:0 44px 90px -40px rgba(0,0,0,.55); } }
+.site .chrome{ height:38px; display:flex; align-items:center; gap:7px; padding:0 16px; background:var(--s-bar,#15161a); }
+.site .chrome i{ width:10px; height:10px; border-radius:50%; background:var(--s-dot,#3a3a40); display:block; }
+.site .chrome .u{ margin-left:12px; font-size:11px; color:var(--s-url,#888); background:var(--s-urlbg,#000); padding:4px 14px; border-radius:7px; }
+.site .view{ background:var(--s-bg); color:var(--s-text); font-family:var(--s-font,"Inter",sans-serif); }
+.site .snav{ display:flex; justify-content:space-between; align-items:center; padding:16px 22px; border-bottom:1px solid var(--s-line); }
+.site .snav .b{ font-family:var(--s-display,"Inter",sans-serif); font-weight:var(--s-bw,600); font-size:15px; letter-spacing:var(--s-ls,0); text-transform:var(--s-tt,none); color:var(--s-text); }
+.site .snav .b em{ color:var(--s-accent); font-style:normal; }
+.site .tabs{ display:flex; gap:5px; }
+.site .tabs button{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--s-muted); padding:6px 11px; border-radius:999px; transition:color .25s, background-color .25s; }
+.site .tabs button:hover{ color:var(--s-text); }
+.site .tabs button.on{ color:var(--s-accent-ink,#fff); background:var(--s-accent); }
+.site .stage{ position:relative; aspect-ratio:7/5; overflow:hidden; }
+.site .panel{ position:absolute; inset:0; padding:30px 24px; display:flex; flex-direction:column; justify-content:center; opacity:0; visibility:hidden; transform:translateY(10px); transition:opacity .45s var(--ease), transform .45s var(--ease), visibility .45s; }
+.site .panel.on{ opacity:1; visibility:visible; transform:none; }
+.site .eb{ font-size:9px; letter-spacing:.22em; text-transform:uppercase; color:var(--s-accent); margin-bottom:11px; }
+.site h4{ font-family:var(--s-display,"Inter",sans-serif); font-weight:var(--s-hw,600); line-height:1.05; letter-spacing:var(--s-hls,-0.01em); text-transform:var(--s-htt,none); font-size:clamp(1.5rem,3.6vw,2.4rem); margin:0 0 12px; color:var(--s-text); }
+.site .panel p{ font-size:12px; color:var(--s-muted); max-width:32ch; line-height:1.55; }
+.site .b{ display:inline-flex; margin-top:18px; align-self:flex-start; background:var(--s-accent); color:var(--s-accent-ink,#fff); font-size:11px; font-weight:600; padding:9px 18px; border-radius:var(--s-radius,999px); letter-spacing:.02em; text-transform:var(--s-btt,none); }
+/* grid de itens (áreas/cardápio) */
+.site .items{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.site .item{ border:1px solid var(--s-line); border-radius:10px; padding:13px 14px; }
+.site .item .it{ font-size:13px; color:var(--s-text); font-weight:500; }
+.site .item .is{ font-size:10px; color:var(--s-muted); margin-top:3px; }
+.site .item .ip{ font-size:11px; color:var(--s-accent); margin-top:5px; font-weight:600; }
+/* pseudo-form / contato */
+.site .field{ background:var(--s-field,rgba(255,255,255,.05)); border:1px solid var(--s-line); border-radius:9px; padding:11px 13px; font-size:11px; color:var(--s-muted); margin-bottom:9px; }
+.site .frow{ display:flex; gap:9px; }
+.site .frow .field{ flex:1; }
+
+/* exemplo: advocacia (navy / dourado / serif) */
+.site--law{ --s-bar:#0a1019; --s-dot:#26324a; --s-url:#6b7a99; --s-urlbg:#060a12;
+  --s-bg:radial-gradient(120% 90% at 80% -10%,#1a2942,#0b1320 62%); --s-text:#f3ead9; --s-muted:#aebbd1;
+  --s-accent:#c2a36b; --s-accent-ink:#1a1206; --s-line:rgba(194,163,107,.2); --s-field:rgba(194,163,107,.06);
+  --s-display:"Playfair Display",serif; --s-hw:500; --s-radius:3px; }
+/* exemplo: restaurante (quente / serif) */
+.site--rest{ --s-bar:#241712; --s-dot:#4a3326; --s-url:#b89a82; --s-urlbg:#160d09;
+  --s-bg:radial-gradient(120% 90% at 25% -10%,#3a241a,#1c110b 62%); --s-text:#f4e7d6; --s-muted:#c9ab93;
+  --s-accent:#d98a4f; --s-accent-ink:#1c0f06; --s-line:rgba(217,138,79,.2); --s-field:rgba(217,138,79,.06);
+  --s-display:"Playfair Display",serif; --s-hw:500; --s-radius:4px; }
+
+@media(max-width:560px){
+  .site .snav{ padding:12px 13px; }
+  .site .snav .b{ font-size:11.5px; }
+  .site .tabs{ gap:3px; }
+  .site .tabs button{ font-size:8px; padding:5px 7px; letter-spacing:.03em; }
+  .site .stage{ aspect-ratio:6/5; }
+  .site .panel{ padding:22px 16px; }
+  .site h4{ font-size:1.3rem; }
+  .site .panel p{ font-size:11px; }
+  .site .items{ gap:7px; }
+  .site .item{ padding:9px 10px; }
+  .site .item .it{ font-size:11.5px; }
+}
+
+/* ===================== SHOWREEL: IA AO VIVO ===================== */
+.reel{ position:relative; min-height:100svh; background:#0a0a0a; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18vh clamp(22px,6vw,8vw); overflow:hidden; text-align:center; }
+.reel .glow{ position:absolute; inset:0; z-index:0; background:radial-gradient(50% 50% at 50% 45%, rgba(37,211,102,.10), transparent 70%); }
+.reel .inner{ position:relative; z-index:2; width:100%; display:flex; flex-direction:column; align-items:center; }
+.reel .eyebrow{ color:#a1a1aa; margin-bottom:3vw; }
+.reel h2{ font-size:clamp(3rem,12vw,11rem); }
+.reel h2 span{ display:block; }
+.reel .sub{ color:#a1a1aa; max-width:30rem; margin-top:4vw; font-size:1.05rem; }
+
+/* live chat panel */
+.panel{ width:min(420px,100%); margin-top:7vh; background:linear-gradient(180deg,#141519,#0d0e11); border:1px solid var(--line); border-radius:22px; padding:16px; text-align:left; box-shadow:0 50px 90px -50px #000; }
+.panel-top{ display:flex; align-items:center; justify-content:space-between; padding:4px 6px 14px; }
+.panel-top .who{ display:flex; align-items:center; gap:10px; }
+.panel-top .av{ width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#1b6b5a,#0f4a40); display:grid; place-items:center; font-weight:500; color:var(--wa); font-size:13px; }
+.panel-top .nm{ font-weight:400; font-size:14px; }
+.panel-top .st{ font-size:10px; color:var(--wa); display:flex; align-items:center; gap:5px; }
+.panel-top .st::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--wa); }
+.panel-top .tag{ font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--sand); border:1px solid rgba(224,204,187,.3); border-radius:999px; padding:4px 9px; }
+.chat{ background:rgba(0,0,0,.25); border-radius:14px; padding:14px; min-height:270px; display:flex; flex-direction:column; gap:9px; }
+.msg{ max-width:82%; padding:9px 13px; border-radius:14px; font-size:13.5px; line-height:1.4; opacity:0; transform:translateY(8px); }
+.msg.show{ opacity:1; transform:translateY(0); transition:.35s var(--ease); }
+.msg.them{ align-self:flex-start; background:#202c33; border-bottom-left-radius:4px; }
+.msg.bot{ align-self:flex-end; background:#005c4b; border-bottom-right-radius:4px; }
+.msg.bot .lab{ display:block; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#7be3c0; margin-bottom:3px; }
+.typing{ align-self:flex-end; background:#005c4b; padding:12px 15px; border-radius:14px; border-bottom-right-radius:4px; display:none; }
+.typing.show{ display:flex; gap:5px; }
+.typing span{ width:6px; height:6px; border-radius:50%; background:#7be3c0; animation:blink 1.2s infinite; }
+.typing span:nth-child(2){ animation-delay:.2s } .typing span:nth-child(3){ animation-delay:.4s }
+@keyframes blink{ 0%,60%,100%{ opacity:.3 } 30%{ opacity:1 } }
+.confirm{ margin-top:auto; display:flex; align-items:center; gap:8px; background:rgba(37,211,102,.1); border:1px solid rgba(37,211,102,.3); color:var(--wa); border-radius:10px; padding:10px 13px; font-size:12.5px; opacity:0; transform:translateY(8px); }
+.confirm.show{ opacity:1; transform:translateY(0); transition:.4s var(--ease); }
+.confirm svg{ width:16px; height:16px; flex:none; }
+
+/* ===================== PLANOS ===================== */
+.plans{ background:var(--bg); padding:16vh clamp(22px,6vw,8vw); }
+.plans .head{ margin-bottom:10vh; }
+.plans h2{ font-size:clamp(3.4rem,12vw,11rem); margin-top:3vw; }
+.plans .head p{ color:var(--muted); max-width:34rem; margin-top:2rem; font-size:1.05rem; }
+.plan-grid{ display:grid; grid-template-columns:1fr; gap:0; border-top:1px solid var(--line); }
+@media(min-width:900px){ .plan-grid{ grid-template-columns:repeat(3,1fr); } }
+.plan{ padding:3.4rem 2.2rem; border-bottom:1px solid var(--line); display:flex; flex-direction:column; transition:background-color .4s var(--ease); }
+@media(min-width:900px){ .plan{ border-right:1px solid var(--line); border-bottom:none; } .plan:last-child{ border-right:none; } }
+.plan.feat{ background:linear-gradient(180deg, rgba(224,204,187,.07), transparent); }
+.plan .mark{ font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--sand); height:1.2rem; }
+.plan .pname{ font-size:2.4rem; font-weight:300; letter-spacing:-0.04em; margin-top:.4rem; }
+.plan .ptag{ color:var(--muted); font-size:.95rem; margin-top:.6rem; min-height:3.2rem; }
+.plan .price{ display:flex; align-items:baseline; gap:.4rem; margin:2rem 0 .3rem; }
+.plan .price .cur{ color:var(--muted); font-size:1.1rem; }
+.plan .price .num{ font-size:3.4rem; font-weight:300; letter-spacing:-0.05em; line-height:1; }
+.plan .price .plus{ color:var(--sand); font-size:2rem; font-weight:300; }
+.plan .mens{ font-size:.85rem; color:var(--muted2); min-height:1.2rem; }
+.plan .mens b{ color:var(--fg); font-weight:400; }
+.plan .div{ height:1px; background:var(--line); margin:2.2rem 0 1.6rem; }
+.plan ul{ list-style:none; display:flex; flex-direction:column; gap:.85rem; flex:1; }
+.plan ul li{ display:flex; gap:.7rem; font-size:.98rem; color:#d4d4d8; align-items:flex-start; }
+.plan ul li svg{ width:17px; height:17px; flex:none; margin-top:3px; color:var(--wa); }
+.plan ul li.prev{ color:var(--muted); }
+.plan ul li.prev svg{ color:var(--sand); }
+.plan .act{ margin-top:2.6rem; }
+.plans .note{ text-align:center; color:var(--muted2); font-size:.9rem; margin-top:8vh; }
+
+/* ===================== FAQ ===================== */
+.faq{ background:var(--bg); padding:8vh clamp(22px,6vw,8vw) 16vh; }
+.faq .head{ text-align:center; margin-bottom:10vh; }
+.faq h2{ font-size:clamp(3rem,11vw,9rem); }
+.faq .list{ max-width:60rem; margin:0 auto; }
+.qa{ border-bottom:1px solid var(--line); }
+.qa button{ width:100%; display:flex; justify-content:space-between; align-items:center; gap:1.5rem; text-align:left; padding:1.7rem 0; font-size:1.25rem; font-weight:300; letter-spacing:-0.02em; color:var(--fg); }
+.qa .pm{ flex:none; width:28px; height:28px; border-radius:50%; border:1px solid var(--line); display:grid; place-items:center; transition:transform .4s var(--ease), background-color .3s, color .3s; }
+.qa .pm svg{ width:14px; height:14px; }
+.qa.open .pm{ transform:rotate(45deg); background:var(--fg); color:var(--bg); }
+.qa .a{ overflow:hidden; max-height:0; transition:max-height .4s var(--ease2); }
+.qa .a p{ padding:0 0 1.8rem; color:var(--muted); max-width:52rem; font-size:1.02rem; }
+
+/* ===================== CONTATO ===================== */
+.contact{ background:var(--bg2); padding:16vh clamp(22px,6vw,8vw); }
+.contact-grid{ display:grid; grid-template-columns:1fr; gap:8vh; align-items:center; }
+@media(min-width:900px){ .contact-grid{ grid-template-columns:1.1fr .9fr; gap:6vw; } }
+.contact h2{ font-size:clamp(2.6rem,8vw,6rem); }
+.contact h2 span{ display:block; }
+.contact .l p{ color:var(--muted); margin-top:1.6rem; max-width:30rem; font-size:1.05rem; }
+.contact .l .wa-btn{ margin-top:2.4rem; }
+.form{ border:1px solid var(--line); border-radius:18px; padding:2rem; background:#0c0d10; }
+.form .row{ margin-bottom:1.2rem; }
+.form label{ display:block; font-size:.78rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted2); margin-bottom:.55rem; }
+.form input, .form select, .form textarea{ width:100%; background:#000; border:1px solid var(--line); color:var(--fg); border-radius:11px; padding:.85rem 1rem; font-weight:300; transition:border-color .2s, box-shadow .2s; }
+.form input:focus, .form select:focus, .form textarea:focus{ outline:none; border-color:var(--wa); box-shadow:0 0 0 3px rgba(37,211,102,.15); }
+.form textarea{ resize:vertical; min-height:80px; }
+.form .send{ width:100%; margin-top:.5rem; justify-content:center; }
+.form .hint{ text-align:center; color:var(--muted2); font-size:.8rem; margin-top:1rem; }
+
+/* ===================== FOOTER ===================== */
+.foot{ background:var(--foot); color:var(--sand); padding:14vh clamp(22px,6vw,8vw) 7vh; }
+.foot-grid{ display:grid; grid-template-columns:repeat(12,1fr); gap:6vw 2vw; }
+.foot .big{ grid-column:1 / -1; }
+.foot .big h2{ font-size:clamp(3.4rem,12vw,11rem); }
+.foot .big h2 span{ display:block; }
+.foot .big p{ opacity:.8; max-width:24rem; margin-top:2rem; font-size:1.05rem; }
+.foot .rule{ grid-column:1 / -1; height:1px; background:rgba(224,204,187,.2); margin:6vh 0 2vh; }
+.foot .col{ grid-column:span 12; font-size:.98rem; }
+.foot .col h4{ font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; opacity:.6; margin-bottom:1rem; }
+.foot .col a{ display:block; margin-bottom:.55rem; width:fit-content; }
+.foot .addr{ opacity:.8; line-height:1.7; }
+.foot .copy{ grid-column:1 / -1; margin-top:6vh; display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; font-size:.82rem; opacity:.6; }
+@media(min-width:900px){
+  .foot .col.addr-c{ grid-column:1 / span 3; }
+  .foot .col.mail-c{ grid-column:4 / span 3; }
+  .foot .col.nav-c{ grid-column:7 / span 2; }
+  .foot .col.soc-c{ grid-column:9 / span 2; }
+  .foot .col.cta-c{ grid-column:11 / span 2; display:flex; justify-content:flex-end; align-items:flex-start; }
+}
+
+/* whatsapp float */
+.fab{ position:fixed; right:22px; bottom:22px; z-index:40; width:56px; height:56px; border-radius:50%; background:var(--wa); display:grid; place-items:center; box-shadow:0 14px 34px -10px rgba(37,211,102,.7); transition:transform .16s var(--ease); }
+.fab svg{ width:28px; height:28px; color:var(--wa-ink); }
+.fab:hover{ transform:scale(1.08); } .fab:active{ transform:scale(.95); }
+
+/* reveal */
+.rv{ opacity:0; transform:translateY(20px); transition:opacity .8s var(--ease), transform .8s var(--ease); }
+.rv.in{ opacity:1; transform:translateY(0); }
+
+@media(prefers-reduced-motion:reduce){
+  *{ animation:none !important; scroll-behavior:auto !important; transition-duration:.01ms !important; }
+  .rv{ opacity:1; transform:none; }
+  .msg,.confirm{ opacity:1; transform:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav">
+  <a href="#topo" class="brand">Órbita</a>
+  <div class="links">
+    <a href="#trabalhos" class="ul">Trabalhos</a>
+    <a href="#planos" class="ul">Planos</a>
+    <a href="#duvidas" class="ul">Dúvidas</a>
+    <a href="#contato" class="ul">Contato</a>
+    <a href="#" data-wa class="ul">WhatsApp</a>
+  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">
+    Menu
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18" stroke-linecap="round"/></svg>
+  </button>
+</nav>
+<div class="m-menu" id="mMenu">
+  <a href="#trabalhos" data-close>Trabalhos desenvolvidos</a>
+  <a href="#planos" data-close>Planos</a>
+  <a href="#duvidas" data-close>Dúvidas</a>
+  <a href="#contato" data-close>Contato</a>
+  <div class="contact">
+    <a href="#" data-wa>WhatsApp</a>
+    <a href="mailto:contato@orbita.com.br" data-email>contato@orbita.com.br</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<header class="hero" id="topo">
+  <div class="bg"></div>
+  <div class="hero-grid">
+    <p class="intro">Estúdio que coloca negócios locais no automático — sites, IA no WhatsApp, agendamento e automações sob medida pra você atender mais sem viver grudado no celular.</p>
+
+    <h1 class="display">
+      <span>Presença.</span>
+      <span class="o2">Automação.</span>
+      <span>Autonomia.</span>
+    </h1>
+
+    <div class="pitch">
+      <p>Eu construo a parte digital do seu negócio pra ela trabalhar sozinha: responde cliente, agenda horário e organiza tudo. Você cuida do que importa.</p>
+      <a href="#" data-wa class="cta on-dark">
+        <span class="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="lbl">Falar no WhatsApp</span>
+      </a>
+    </div>
+
+    <div class="side">
+      <div class="grp">
+        <a href="#trabalhos" class="ul">Trabalhos desenvolvidos</a>
+        <a href="#planos" class="ul">Planos</a>
+        <a href="#duvidas" class="ul">Dúvidas</a>
+        <a href="#contato" class="ul">Contato</a>
+      </div>
+      <div class="grp dim">
+        <a href="#" data-wa class="ul">WhatsApp</a>
+        <a href="mailto:contato@orbita.com.br" class="ul" data-email>contato@orbita.com.br</a>
+        <span>Santos · São Paulo</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== SERVIÇOS: O QUE FAZEMOS ===== -->
+<section class="svc" id="servicos">
+  <div class="head">
+    <span class="eyebrow rv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      O que fazemos
+    </span>
+    <h2 class="display rv">O que fazemos</h2>
+    <p class="rv">Tudo o que o seu negócio precisa pra existir bem no digital — do site ao atendimento — construído e cuidado por uma equipe só.</p>
+  </div>
+  <div class="list">
+    <div class="row rv"><span class="n">01</span><div class="c"><h3>Sites personalizados</h3></div><div class="c desc"><p>Cada negócio com identidade própria: rápido, bonito e feito pra converter no celular — onde a maioria dos seus clientes vai te ver.</p></div></div>
+    <div class="row rv"><span class="n">02</span><div class="c"><h3>Manutenção &amp; hospedagem</h3></div><div class="c desc"><p>Seu site sempre no ar, atualizado e seguro. Mudou um preço, um horário, uma foto? A gente ajusta. Você nunca fica na mão.</p></div></div>
+    <div class="row rv"><span class="n">03</span><div class="c"><h3>Atendimento e triagem com IA</h3></div><div class="c desc"><p>A IA responde no WhatsApp, tira as dúvidas comuns, qualifica o cliente e encaminha pra pessoa certa — na hora, a qualquer horário.</p></div></div>
+    <div class="row rv"><span class="n">04</span><div class="c"><h3>Agendamento online</h3></div><div class="c desc"><p>O cliente marca sozinho e recebe lembrete automático. Menos falta, menos troca de mensagem, agenda organizada.</p></div></div>
+    <div class="row rv"><span class="n">05</span><div class="c"><h3>SEO básico</h3></div><div class="c desc"><p>Seu negócio achável no Google e no Maps por quem está procurando perto de você — sem depender só das redes sociais.</p></div></div>
+    <div class="row rv"><span class="n">06</span><div class="c"><h3>Automações &amp; integrações</h3></div><div class="c desc"><p>Tarefas repetitivas no automático, conectadas às ferramentas que você já usa. O sistema trabalha, você colhe.</p></div></div>
+  </div>
+</section>
+
+<!-- ===== LIGHT: TRABALHOS DESENVOLVIDOS ===== -->
+<section class="work" id="trabalhos">
+  <div class="head">
+    <div class="l">
+      <span class="eyebrow rv">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Portfólio
+      </span>
+      <h2 class="display rv">Trabalhos<br>desenvolvidos</h2>
+    </div>
+  </div>
+  <p class="rv" style="font-size:clamp(1.5rem,3vw,2.2rem); font-weight:300; letter-spacing:-0.025em; color:var(--ink); max-width:20ch; line-height:1.22; margin:-6vh 0 13vh;">Cada negócio ganha uma identidade própria. Passe o olho — e imagine o seu aqui.</p>
+
+  <div class="examples">
+    <!-- EXEMPLO 1: advocacia -->
+    <div class="demo rv">
+      <div class="site site--law" data-site>
+        <div class="chrome"><i></i><i></i><i></i><span class="u">albuquerquecosta.adv.br</span></div>
+        <div class="view">
+          <div class="snav">
+            <span class="b">Albuquerque <em>&amp;</em> Costa</span>
+            <div class="tabs"><button class="on">Início</button><button>Áreas</button><button>Contato</button></div>
+          </div>
+          <div class="stage">
+            <div class="panel on">
+              <div class="eb">Advocacia empresarial · desde 1998</div>
+              <h4>Estratégia jurídica para decisões que não admitem erro.</h4>
+              <p>Mais de duas décadas defendendo empresas no contencioso e na mesa de negociação.</p>
+              <span class="b">Agende uma consulta</span>
+            </div>
+            <div class="panel">
+              <div class="eb">Áreas de atuação</div>
+              <div class="items">
+                <div class="item"><div class="it">Empresarial</div><div class="is">Societário e contratos</div></div>
+                <div class="item"><div class="it">Tributário</div><div class="is">Planejamento e defesa</div></div>
+                <div class="item"><div class="it">Trabalhista</div><div class="is">Defesa e prevenção</div></div>
+                <div class="item"><div class="it">Contencioso</div><div class="is">Cível e arbitragem</div></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="eb">Fale com o escritório</div>
+              <h4>Vamos analisar o seu caso.</h4>
+              <div class="field">Av. Ana Costa, 000 — Santos/SP</div>
+              <div class="field">contato@albuquerquecosta.adv.br</div>
+              <span class="b">Falar agora</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hint"><span class="nm">Albuquerque &amp; Costa</span><span class="dash">—</span><span>Escritório de advocacia</span><span class="tip">clique nas abas ↑</span></div>
+    </div>
+
+    <!-- EXEMPLO 2: restaurante -->
+    <div class="demo rv">
+      <div class="site site--rest" data-site>
+        <div class="chrome"><i></i><i></i><i></i><span class="u">cantinalucia.com.br</span></div>
+        <div class="view">
+          <div class="snav">
+            <span class="b">Cantina Lúcia</span>
+            <div class="tabs"><button class="on">Início</button><button>Cardápio</button><button>Reservas</button></div>
+          </div>
+          <div class="stage">
+            <div class="panel on">
+              <div class="eb">Cozinha italiana · Santos</div>
+              <h4>Sabor de família, desde 1987.</h4>
+              <p>Massas frescas, forno a lenha e o vinho certo pra cada prato.</p>
+              <span class="b">Reservar mesa</span>
+            </div>
+            <div class="panel">
+              <div class="eb">Do nosso cardápio</div>
+              <div class="items">
+                <div class="item"><div class="it">Tagliatelle al ragù</div><div class="is">Massa fresca, molho de 6h</div><div class="ip">R$ 58</div></div>
+                <div class="item"><div class="it">Pizza margherita</div><div class="is">Forno a lenha</div><div class="ip">R$ 49</div></div>
+                <div class="item"><div class="it">Risoto de funghi</div><div class="is">Cogumelos frescos</div><div class="ip">R$ 62</div></div>
+                <div class="item"><div class="it">Tiramisù</div><div class="is">Sobremesa da casa</div><div class="ip">R$ 28</div></div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="eb">Reserve sua mesa</div>
+              <h4>Garanta seu lugar.</h4>
+              <div class="frow"><div class="field">Data — hoje</div><div class="field">4 pessoas</div></div>
+              <div class="field">Horário — 20h30</div>
+              <span class="b">Confirmar reserva</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hint"><span class="nm">Cantina Lúcia</span><span class="dash">—</span><span>Restaurante</span><span class="tip">clique nas abas ↑</span></div>
+    </div>
+  </div>
+
+  <div class="foot-link rv">
+    <a href="#planos" class="cta on-light">
+      <span class="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span class="lbl">Quero um assim</span>
+    </a>
+  </div>
+</section>
+
+<!-- ===== SHOWREEL: IA AO VIVO ===== -->
+<section class="reel">
+  <div class="glow"></div>
+  <div class="inner">
+    <span class="eyebrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg>
+      Trabalho em movimento
+    </span>
+    <h2 class="display"><span>A IA atende</span><span>por você</span></h2>
+    <p class="sub">Seu melhor funcionário trabalha 24 horas, nunca esquece de responder e nunca tira folga. Veja como fica.</p>
+
+    <div class="panel" aria-label="Demonstração: IA respondendo no WhatsApp">
+      <div class="panel-top">
+        <div class="who"><div class="av">AC</div><div><div class="nm">Albuquerque &amp; Costa</div><div class="st">no ar · IA ativa</div></div></div>
+        <span class="tag">Atendimento auto</span>
+      </div>
+      <div class="chat">
+        <div class="msg them">Boa tarde. Vocês cuidam de processo trabalhista?</div>
+        <div class="typing"><span></span><span></span><span></span></div>
+        <div class="msg bot"><span class="lab">IA · Órbita</span>Boa tarde! Cuidamos sim — tanto defesa quanto ajuizamento. É uma ação nova ou já em andamento?</div>
+        <div class="msg them">Entrou uma ação contra a minha empresa</div>
+        <div class="typing"><span></span><span></span><span></span></div>
+        <div class="msg bot"><span class="lab">IA · Órbita</span>Entendi. Por causa dos prazos, o ideal é agir rápido. O senhor já foi citado ou recebeu alguma notificação?</div>
+        <div class="msg them">Recebi ontem</div>
+        <div class="typing"><span></span><span></span><span></span></div>
+        <div class="msg bot"><span class="lab">IA · Órbita</span>Perfeito, então dá tempo. Posso agendar uma análise com o Dr. Albuquerque? Amanhã tenho 10h ou 15h.</div>
+        <div class="msg them">15h tá ótimo. Qual o valor?</div>
+        <div class="typing"><span></span><span></span><span></span></div>
+        <div class="msg bot"><span class="lab">IA · Órbita</span>A primeira conversa de alinhamento é sem custo. Agendei pra amanhã às 15h e já te envio a lista de documentos ✅</div>
+        <div class="confirm">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Consulta agendada · documentos enviados
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PLANOS ===== -->
+<section class="plans" id="planos">
+  <div class="head">
+    <span class="eyebrow rv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Planos
+    </span>
+    <h2 class="display rv">Escolha o<br>seu degrau</h2>
+    <p class="rv">Cada plano inclui tudo do anterior. Comece marcando presença ou já automatize o negócio inteiro — você sobe quando fizer sentido.</p>
+  </div>
+
+  <div class="plan-grid">
+    <!-- ESSENCIAL -->
+    <div class="plan rv">
+      <span class="mark"></span>
+      <div class="pname">Essencial</div>
+      <div class="ptag">Pra marcar presença e nunca mais perder cliente no Google.</div>
+      <div class="mens" style="margin:2rem 0 0;">Inclui manutenção mensal · <b>sob orçamento</b></div>
+      <div class="div"></div>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Site profissional</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Botão de WhatsApp</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Formulário de contato</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Google Maps integrado</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> SEO básico</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> 100% responsivo</li>
+      </ul>
+      <a href="#" data-wa data-plan="Essencial" class="cta on-dark act">
+        <span class="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="lbl">Quero o Essencial</span>
+      </a>
+    </div>
+
+    <!-- PROFISSIONAL -->
+    <div class="plan feat rv">
+      <span class="mark">Mais escolhido</span>
+      <div class="pname">Profissional</div>
+      <div class="ptag">Pra parar de responder no manual e deixar o negócio atender sozinho.</div>
+      <div class="mens" style="margin:2rem 0 0;">Sob orçamento</div>
+      <div class="div"></div>
+      <ul>
+        <li class="prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg> Tudo do Essencial</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> IA respondendo o WhatsApp</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Agendamento online</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Automações do dia a dia</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> CRM de clientes</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Dashboard de resultados</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Integrações</li>
+      </ul>
+      <a href="#" data-wa data-plan="Profissional" class="cta on-dark act">
+        <span class="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="lbl">Quero o Profissional</span>
+      </a>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="plan rv">
+      <span class="mark"></span>
+      <div class="pname">Premium</div>
+      <div class="ptag">Pra quem quer o negócio inteiro rodando sozinho, do início ao fim.</div>
+      <div class="mens" style="margin:2rem 0 0;">Projeto sob medida · sob orçamento</div>
+      <div class="div"></div>
+      <ul>
+        <li class="prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg> Tudo do Profissional</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> IA personalizada pro seu negócio</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Fluxos completos de atendimento</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Automações internas da operação</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg> Follow-up automático de clientes</li>
+      </ul>
+      <a href="#" data-wa data-plan="Premium" class="cta on-dark act">
+        <span class="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="lbl">Falar sobre o Premium</span>
+      </a>
+    </div>
+  </div>
+  <p class="note rv">Não sabe qual escolher? Me chama no WhatsApp que eu te indico o certo pro seu caso — sem enrolação.</p>
+</section>
+
+<!-- ===== FAQ ===== -->
+<section class="faq" id="duvidas">
+  <div class="head">
+    <span class="eyebrow rv">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3 2.5c-.6.3-1 .8-1 1.5M12 17h.01" stroke-linecap="round"/></svg>
+      Perguntas frequentes
+    </span>
+    <h2 class="display rv">Dúvidas</h2>
+  </div>
+  <div class="list">
+    <div class="qa rv"><button aria-expanded="false"><span>Quanto tempo até ficar no ar?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></span></button><div class="a"><p>O Essencial costuma ficar pronto em poucos dias. Os planos com IA e automação levam um pouco mais, porque eu treino o sistema com o jeito do seu negócio — e você acompanha cada etapa.</p></div></div>
+    <div class="qa rv"><button aria-expanded="false"><span>E essa mensalidade, é o quê?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></span></button><div class="a"><p>É a manutenção que mantém tudo no ar, atualizado e seguro: hospedagem, ajustes, correções e suporte direto comigo. Negócio digital não é "faz e abandona" — precisa de cuidado contínuo. O valor a gente combina conforme o plano.</p></div></div>
+    <div class="qa rv"><button aria-expanded="false"><span>Eu já tenho site. Serve pra mim?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></span></button><div class="a"><p>Serve. Dá pra plugar a IA no WhatsApp, o agendamento e as automações no que você já tem, ou eu refaço o site se ele estiver atrapalhando mais do que ajudando. A gente vê na conversa o que faz mais sentido.</p></div></div>
+    <div class="qa rv"><button aria-expanded="false"><span>A IA vai responder errado e me dar dor de cabeça?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></span></button><div class="a"><p>Ela responde só o que a gente combinar e fala do jeito do seu negócio. Quando aparece algo fora do roteiro ou um cliente importante, ela passa pra você na hora. Você está sempre no controle.</p></div></div>
+    <div class="qa rv"><button aria-expanded="false"><span>Não entendo de tecnologia. Vou conseguir usar?</span><span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></span></button><div class="a"><p>Vai. A ideia é essa: o sistema trabalha pra você, não o contrário. Eu deixo tudo pronto e te ensino o básico em 15 minutos. Qualquer dúvida, é só me chamar.</p></div></div>
+  </div>
+</section>
+
+<!-- ===== CONTATO ===== -->
+<section class="contact" id="contato">
+  <div class="contact-grid">
+    <div class="l rv">
+      <span class="eyebrow" style="margin-bottom:1.4rem;display:inline-flex;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Bora começar
+      </span>
+      <h2 class="display"><span>Vamos colocar</span><span>seu negócio</span><span>pra rodar.</span></h2>
+      <p>Me conta rapidinho o que você precisa. Em poucos minutos a gente já tá conversando no WhatsApp.</p>
+      <a href="#" data-wa class="wa-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.523 5.26l-.999 3.648 3.965-1.207zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        WhatsApp direto
+      </a>
+    </div>
+
+    <div class="form rv">
+      <div class="row"><label for="f-nome">Seu nome</label><input id="f-nome" type="text" placeholder="Como te chamo?"></div>
+      <div class="row"><label for="f-neg">Seu negócio</label><input id="f-neg" type="text" placeholder="Ex: Ótica Vista, Barbearia do Léo..."></div>
+      <div class="row"><label for="f-plano">Plano de interesse</label>
+        <select id="f-plano">
+          <option>Ainda não sei, me ajuda a escolher</option>
+          <option>Essencial</option><option>Profissional</option><option>Premium</option>
+        </select>
+      </div>
+      <div class="row"><label for="f-msg">O que mais te trava hoje? (opcional)</label><textarea id="f-msg" placeholder="Ex: perco mensagens, agenda bagunçada..."></textarea></div>
+      <button class="wa-btn send" id="f-send">Enviar pelo WhatsApp</button>
+      <p class="hint">Abre direto no WhatsApp com tudo preenchido. Você só confere e envia.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="foot">
+  <div class="foot-grid">
+    <div class="big">
+      <h2 class="display"><span>Órbita</span></h2>
+      <p>Sites e automação para negócios locais. Feito por quem programa de verdade, perto de você.</p>
+    </div>
+    <div class="rule"></div>
+    <div class="col addr-c">
+      <h4>Onde estou</h4>
+      <div class="addr">Santos<br>São Paulo<br>Brasil</div>
+    </div>
+    <div class="col mail-c">
+      <h4>Contato</h4>
+      <a href="mailto:contato@orbita.com.br" class="ul" data-email>contato@orbita.com.br</a>
+      <a href="#" data-wa class="ul">WhatsApp</a>
+    </div>
+    <div class="col nav-c">
+      <h4>Navegar</h4>
+      <a href="#trabalhos" class="ul">Trabalhos</a>
+      <a href="#planos" class="ul">Planos</a>
+      <a href="#duvidas" class="ul">Dúvidas</a>
+    </div>
+    <div class="col soc-c">
+      <h4>Social</h4>
+      <a href="#" class="ul" data-ig>Instagram</a>
+      <a href="#" class="ul">LinkedIn</a>
+    </div>
+    <div class="col cta-c">
+      <a href="#contato" class="cta on-dark" style="color:var(--sand)">
+        <span class="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17 17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="lbl">Começar</span>
+      </a>
+    </div>
+    <div class="copy">
+      <span>© <span id="ano">2026</span> Órbita. Todos os direitos reservados.</span>
+      <span>Santos · São Paulo · Brasil</span>
+    </div>
+  </div>
+</footer>
+
+<a class="fab" data-wa href="#" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.523 5.26l-.999 3.648 3.965-1.207zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+</a>
+
+<script>
+/* ===== CONFIGURE AQUI ===== */
+const CONFIG = {
+  whatsapp: "5513991735264",   // ← seu número: DDI+DDD+número, só dígitos
+  saudacao: "Olá! Vim pelo seu site e quero saber mais sobre os planos."
+};
+/* ========================== */
+(function(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wa = t => "https://wa.me/"+CONFIG.whatsapp+"?text="+encodeURIComponent(t||CONFIG.saudacao);
+
+  document.querySelectorAll('[data-wa]').forEach(a=>{
+    const p = a.getAttribute('data-plan');
+    a.href = wa(p ? "Olá! Tenho interesse no plano "+p+". Pode me passar mais detalhes?" : CONFIG.saudacao);
+    a.target="_blank"; a.rel="noopener";
+  });
+  document.getElementById('ano').textContent = new Date().getFullYear();
+
+  // mobile menu
+  const mb=document.getElementById('menuBtn'), mm=document.getElementById('mMenu');
+  mb.addEventListener('click', ()=> mm.classList.toggle('open'));
+  mm.querySelectorAll('[data-close]').forEach(a=> a.addEventListener('click', ()=> mm.classList.remove('open')));
+
+  // reveal
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.rv').forEach((el,i)=>{ el.style.transitionDelay=Math.min(i%5,4)*60+'ms'; io.observe(el); });
+
+  // faq
+  document.querySelectorAll('.qa').forEach(qa=>{
+    const b=qa.querySelector('button'), a=qa.querySelector('.a');
+    b.addEventListener('click',()=>{ const o=qa.classList.toggle('open'); b.setAttribute('aria-expanded',o); a.style.maxHeight=o?a.scrollHeight+'px':0; });
+  });
+
+  // form -> whatsapp
+  document.getElementById('f-send').addEventListener('click',()=>{
+    const g=id=>document.getElementById(id).value.trim();
+    let t="Olá! Vim pelo site.";
+    if(g('f-nome')) t+="\nNome: "+g('f-nome');
+    if(g('f-neg'))  t+="\nNegócio: "+g('f-neg');
+    t+="\nPlano: "+document.getElementById('f-plano').value;
+    if(g('f-msg'))  t+="\nO que me trava: "+g('f-msg');
+    window.open(wa(t),"_blank","noopener");
+  });
+
+  // exemplos interativos (abas)
+  document.querySelectorAll('[data-site]').forEach(site=>{
+    const tabs=[...site.querySelectorAll('.tabs button')];
+    const panels=[...site.querySelectorAll('.panel')];
+    let idx=0, auto=!reduce, timer=null;
+    const go=i=>{ idx=i; tabs.forEach((t,k)=>t.classList.toggle('on',k===i)); panels.forEach((p,k)=>p.classList.toggle('on',k===i)); };
+    const stop=()=>{ auto=false; if(timer){ clearInterval(timer); timer=null; } };
+    tabs.forEach((t,i)=> t.addEventListener('click',()=>{ stop(); go(i); }));
+    site.addEventListener('mouseenter', stop);
+    if(auto){
+      new IntersectionObserver(e=>{
+        if(e[0].isIntersecting && auto && !timer){ timer=setInterval(()=>{ if(auto) go((idx+1)%tabs.length); }, 3200); }
+      },{threshold:.35}).observe(site);
+    }
+  });
+
+  // live chats (showreel + galeria)
+  document.querySelectorAll('.chat').forEach(chat=>{
+    const items=[...chat.children];                 // ordem: them, typing, bot, them, typing, bot, ..., confirm
+    const showable=items.filter(el=>el.classList.contains('msg')||el.classList.contains('confirm'));
+    if(reduce){ showable.forEach(el=>el.classList.add('show')); return; }
+    // monta a linha do tempo
+    const seq=[]; let t=400;
+    items.forEach((el,i)=>{
+      if(el.classList.contains('typing')){
+        seq.push([t,()=>el.classList.add('show')]); t+=1100;
+      } else if(el.classList.contains('msg')||el.classList.contains('confirm')){
+        const prev=items[i-1];
+        if(prev && prev.classList.contains('typing')) seq.push([t,()=>prev.classList.remove('show')]);
+        seq.push([t,()=>el.classList.add('show')]);
+        t += el.classList.contains('them') ? 850 : 950;
+      }
+    });
+    const total=t+1200;
+    const run=()=>{
+      items.forEach(el=>el.classList.remove('show'));
+      seq.forEach(([ms,fn])=>setTimeout(fn,ms));
+    };
+    let started=false;
+    new IntersectionObserver(e=>{ if(e[0].isIntersecting&&!started){started=true;run();setInterval(run,total);} },{threshold:.25}).observe(chat);
+  });
+})();
+</script>
+</body>
+</html>
