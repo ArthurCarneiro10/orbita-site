@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://orbita-site-eight.vercel.app/sitemap.xml
